@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:sixam_mart/common/nWidget/custom_image.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/cart/controllers/cart_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
@@ -20,13 +21,28 @@ class SplashScreen extends StatefulWidget {
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _globalKey = GlobalKey();
   StreamSubscription<List<ConnectivityResult>>? _onConnectivityChanged;
-
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
   @override
   void initState() {
     super.initState();
+
+    //⭐animation settings
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+
+    //⭐ animation curve
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    //⭐ start animation
+    _animationController.forward();
 
     bool firstTime = true;
     _onConnectivityChanged = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) {
@@ -55,13 +71,14 @@ class SplashScreenState extends State<SplashScreen> {
     Get.find<SplashController>().getConfigData(notificationBody: widget.body);
 
   }
-
   @override
   void dispose() {
-    super.dispose();
-
+    // //⭐ dispose animation
+    _animationController.dispose();
     _onConnectivityChanged?.cancel();
+    super.dispose();
   }
+
 
   // void _route() {
   //   Get.find<SplashController>().getConfigData().then((isSuccess) {
@@ -161,14 +178,23 @@ class SplashScreenState extends State<SplashScreen> {
       Get.find<AuthController>().clearSharedAddress();
     }
 
+    final double width=MediaQuery.sizeOf(context).width;
     return Scaffold(
+
       key: _globalKey,
       body: GetBuilder<SplashController>(builder: (splashController) {
         return Center(
           child: splashController.hasConnection ? Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(Images.logo, width: 200),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: CustomImageView(
+                  imagePath: Images.nLogo,
+                  width: width * 0.5,
+                  fit: BoxFit.contain,
+                ),
+              ),
               const SizedBox(height: Dimensions.paddingSizeSmall),
             ],
           ) : NoInternetScreen(child: SplashScreen(body: widget.body)),

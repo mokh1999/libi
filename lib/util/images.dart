@@ -89,6 +89,7 @@ class Images {
   static const String shippingPolicy = 'assets/image/shipping_policy.png';
   static const String cancellation = 'assets/image/cancelation.png';
   static const String refund = 'assets/image/refund.png';
+
   //ride share
   static const String riderSearch = 'assets/image/rider_search.png';
   static const String addressOffice = 'assets/image/address_type_office.png';
@@ -305,7 +306,6 @@ class Images {
   static const String landingChooseLocation = 'assets/image/landing_choose_location.svg';
 
   //texi module
-
   static const String searchIconNewHome = 'assets/image/search.png';
   static const String addAddress = 'assets/image/trip_address.png';
   static const String carToyota = 'assets/image/car_toyota.jpeg';
@@ -319,7 +319,6 @@ class Images {
   static const String pendingForAllGIF = 'assets/image/pending_for_all.gif';
   static const String locationDistance = 'assets/image/location_distance.png';
   static const String finalLocation = 'assets/image/final_location.png';
-
   static const String hyundaiLogo = 'assets/image/hyundai_logo.png';
   static const String bmwLogo = 'assets/image/bmw_logo.png';
   static const String nissanLogo = 'assets/image/nissan_logo.png';
@@ -327,7 +326,6 @@ class Images {
   static const String toyotaLogo = 'assets/image/toyota_logo.png';
   static const String checkMark = 'assets/image/check_mark.png';
   static const String errorIcon = 'assets/image/error_icon.png';
-
   static const String referIconNew = 'assets/image/refer_icon_new.png';
   static const String starOutline = 'assets/image/star_outline.png';
   static const String airConditioner = 'assets/image/air_conditioner.png';
@@ -341,7 +339,6 @@ class Images {
   static const String bkashLogo = 'assets/image/bkash_logo.png';
   static const String distancePath = 'assets/image/distance_path.png';
   static const String clockDark = 'assets/image/clock_dark.png';
-
   static const String arrivingGIF = 'assets/image/arriving_gif.gif';
   static const String paymentCompleteGIF = 'assets/image/payment_complete_gif.gif';
   static const String navigationArrowIcon = 'assets/image/navigation_arrow.svg';
@@ -370,15 +367,17 @@ class Images {
   static const String taxiPay = 'assets/image/taxi_pay.png';
   static const String taxiEmptyCart = 'assets/image/taxi_empty_cart.svg';
   static const String taxiEnjoyIcon = 'assets/image/enjoy_image.svg';
-
   static const String mapIconExtended = 'assets/json/map-picker-1.json';
   static const String mapIconMinimised = 'assets/json/map-picker-2.json';
 
-
-
   //⭐ new added
-  static const String nLogo = 'assets/image/logo.svg';
+  static const String nLogoLight = 'assets/image/logo.svg';
+  static const String nLogo = 'assets/image/nLogo.svg';
+  static const String nOtp = 'assets/image/nOtp.json';
   static const String nDrawer = 'assets/image/nDrawer.svg';
   static const String nSupermarket = 'assets/image/nSupermarket.png';
   static const String backgroundAppBar = 'assets/image/app_bar_background.svg';
+  static const String nBackgroundSplash = 'assets/image/nBackgroundSplash.png';
+
+
 }

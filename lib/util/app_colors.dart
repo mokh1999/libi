@@ -11,7 +11,7 @@ abstract class AppColors {
   static const Color purple =  Color(0xFFB8267B);
   static const Color subPurple = Color(0xFF951D7E);
   static const Color blue = Color(0xFF4286C5);
-
+ static const Color white = Color(0xFFFFFFff);
 //
 // static const Color gray = Color(0xFF3D3D3D);
 // static const Color grayAppBar = Color(0xFFB2B2B2);
@@ -19,7 +19,7 @@ abstract class AppColors {
 // static const Color grayHintText = Color(0xffADADAD);
 // static const Color grayMainText = Color(0xff404040);
 // static const Color orange = Color(0xFFFF7B38);
-// static const Color white = Color(0xFFFFFFff);
+
 // static const Color whiteBackGround = Color(0xFFEFEFEF);
 // static const Color black = Color(0xFF000000);
 // static const Color containerBackground = Color(0xFF3D3D3D);

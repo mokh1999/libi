@@ -479,7 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       //  logo
                                       CustomImageView(
                                         onTap: () {},
-                                        imagePath: Images.nLogo,
+                                        imagePath: Images.nLogoLight,
                                         height: Dimensions.iconLogo,
                                         fit: BoxFit.scaleDown,
                                       ),
