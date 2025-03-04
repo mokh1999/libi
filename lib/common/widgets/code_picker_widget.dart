@@ -96,7 +96,7 @@ class _CodePickerWidgetState extends State<CodePickerWidget> {
     
     List<CountryCode> elements =
     jsonList.map((json) => CountryCode.fromJson(json)).toList();
-    
+
     if (widget.comparator != null) {
     elements.sort(widget.comparator);
     }
@@ -195,7 +195,7 @@ class _CodePickerWidgetState extends State<CodePickerWidget> {
                 hideSearch: widget.hideSearch!,
                 closeIcon: widget.closeIcon,
                 flagDecoration: widget.flagDecoration,
-                  headerAlignment: widget.headerAlignment as MainAxisAlignment? ?? MainAxisAlignment.start,
+                  headerAlignment: MainAxisAlignment.start,
                 headerTextStyle: widget.headerTextStyle ?? const TextStyle(),
                 hideHeaderText: widget.hideHeaderText ?? false,
                 topBarPadding: widget.topBarPadding as EdgeInsets? ?? EdgeInsets.zero,
@@ -235,10 +235,12 @@ class _CodePickerWidgetState extends State<CodePickerWidget> {
             hideSearch: widget.hideSearch!,
             closeIcon: widget.closeIcon,
             flagDecoration: widget.flagDecoration,
-            headerAlignment: widget.headerAlignment as MainAxisAlignment? ?? MainAxisAlignment.start, // ✅ إصلاح التحويل
+              headerAlignment: widget.headerAlignment is MainAxisAlignment
+                  ? widget.headerAlignment as MainAxisAlignment
+                  : MainAxisAlignment.start,
             headerTextStyle: widget.headerTextStyle ?? const TextStyle(),
-            hideHeaderText: widget.hideHeaderText ?? false, // ✅ ضمان نوع `bool`
-            topBarPadding: widget.topBarPadding as EdgeInsets? ?? EdgeInsets.zero, // ✅ تحويل إلى `EdgeInsets`
+            hideHeaderText: widget.hideHeaderText ?? false,
+            topBarPadding: widget.topBarPadding as EdgeInsets? ?? EdgeInsets.zero,
           ),
         ),
       ).then((e) {

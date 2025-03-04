@@ -12,11 +12,11 @@ abstract class AppColors {
   static const Color subPurple = Color(0xFF951D7E);
   static const Color blue = Color(0xFF4286C5);
  static const Color white = Color(0xFFFFFFff);
+static const Color grayHintText = Color(0xffADADAD);
 //
 // static const Color gray = Color(0xFF3D3D3D);
 // static const Color grayAppBar = Color(0xFFB2B2B2);
 // static const Color grayContainer = Color(0xFFF7F7F7);
-// static const Color grayHintText = Color(0xffADADAD);
 // static const Color grayMainText = Color(0xff404040);
 // static const Color orange = Color(0xFFFF7B38);
 

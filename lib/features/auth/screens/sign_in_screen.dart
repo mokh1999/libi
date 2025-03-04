@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:lottie/lottie.dart';
-import 'package:sixam_mart/common/nWidget/custom_image.dart';
 import 'package:sixam_mart/features/auth/widgets/sign_in/sign_in_view.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -143,6 +142,7 @@ class SignInScreenState extends State<SignInScreen> {
 
                       const SizedBox(
                           height: Dimensions.paddingSizeExtremeLarge),
+
                       SignInView(
                         exitFromApp: widget.exitFromApp,
                         backFromThis: widget.backFromThis,
