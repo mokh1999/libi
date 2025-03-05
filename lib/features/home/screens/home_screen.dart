@@ -49,6 +49,12 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/features/home/widgets/module_view.dart';
 import 'package:sixam_mart/features/parcel/screens/parcel_category_screen.dart';
 
+import '../../../common/widgets/confirmation_dialog.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../cart/controllers/cart_controller.dart';
+import '../../favourite/controllers/favourite_controller.dart';
+import '../../menu/widgets/portion_widget.dart';
+import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -139,6 +145,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
   bool searchBgShow = false;
   final GlobalKey _headerKey = GlobalKey();
@@ -261,28 +268,285 @@ class _HomeScreenState extends State<HomeScreen> {
           splashController.module!.moduleType.toString() == AppConstants.taxi;
 
       return GetBuilder<HomeController>(builder: (homeController) {
+        final double height = MediaQuery.sizeOf(context).height;
+        final double width = MediaQuery.sizeOf(context).width;
         return Scaffold(
+          key: _scaffoldKey,
           //⭐  drawer
           drawerEnableOpenDragGesture: false,
           drawer: Drawer(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                SizedBox(height: 50),
-                ListTile(
-                  title: Text('Item 1'),
-                  onTap: () {},
-                ),
-                ListTile(
-                  title: Text('Item 2'),
-                  onTap: () {},
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  //* header
+                  Container(
+                    height: height * 0.18,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft:
+                            Radius.circular(Dimensions.paddingSizeExtraLarge),
+                        bottomRight:
+                            Radius.circular(Dimensions.paddingSizeExtraLarge),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        //⭐ gradient
+                        Positioned.fill(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(
+                                    Dimensions.paddingSizeExtraLarge),
+                                bottomRight: Radius.circular(
+                                    Dimensions.paddingSizeExtraLarge),
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topRight,
+                                end: Alignment.bottomLeft,
+                                colors: [
+                                  AppColors.orange,
+                                  AppColors.subPrimary,
+                                  AppColors.purple,
+                                  AppColors.subPurple,
+                                  AppColors.blue,
+                                ],
+                                stops: [0.0, 0.27, 0.46, 0.74, 1.0],
+                              ),
+                            ),
+                          ),
+                        ),
+                        //⭐ image profile
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: Dimensions.paddingSizeExtraLarge),
+                          child: Center(
+                            child: Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: ClipOval(
+                                    child: CustomImageView(
+                                      imagePath: Images.driverIcon,
+                                      width: width * 0.1,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: width * 0.02,
+                                ),
+                                SizedBox(
+                                  width: width * 0.4,
+                                  child: Text(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    'Ahmed Elmagwhry',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: height * .7,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          PortionWidget(
+                              icon: Images.chatIcon,
+                              title: 'live_chat'.tr,
+                              route: RouteHelper.getConversationRoute()),
+                          PortionWidget(
+                              icon: Images.helpIcon,
+                              title: 'help_and_support'.tr,
+                              route: RouteHelper.getSupportRoute()),
+                          PortionWidget(
+                              icon: Images.aboutIcon,
+                              title: 'about_us'.tr,
+                              route: RouteHelper.getHtmlRoute('about-us')),
+                          PortionWidget(
+                              icon: Images.termsIcon,
+                              title: 'terms_conditions'.tr,
+                              route: RouteHelper.getHtmlRoute(
+                                  'terms-and-condition')),
+                          PortionWidget(
+                              icon: Images.privacyIcon,
+                              title: 'privacy_policy'.tr,
+                              route:
+                                  RouteHelper.getHtmlRoute('privacy-policy')),
+                          InkWell(
+                            onTap: () async {
+                              if (AuthHelper.isLoggedIn()) {
+                                Get.dialog(
+                                    ConfirmationDialog(
+                                        icon: Images.support,
+                                        description:
+                                            'are_you_sure_to_logout'.tr,
+                                        isLogOut: true,
+                                        onYesPressed: () async {
+                                          Get.find<ProfileController>()
+                                              .clearUserInfo();
+                                          Get.find<AuthController>()
+                                              .socialLogout();
+                                          Get.find<CartController>()
+                                              .clearCartList(
+                                                  canRemoveOnline: false);
+                                          Get.find<FavouriteController>()
+                                              .removeFavourite();
+                                          await Get.find<AuthController>()
+                                              .clearSharedData();
+                                          Get.find<HomeController>()
+                                              .forcefullyNullCashBackOffers();
+                                          Get.find<TaxiCartController>()
+                                              .getCarCartList();
+                                          Get.offAllNamed(
+                                              RouteHelper.getInitialRoute());
+                                        }),
+                                    useSafeArea: false);
+                              } else {
+                                Get.find<FavouriteController>()
+                                    .removeFavourite();
+                                await Get.toNamed(RouteHelper.getSignInRoute(
+                                    Get.currentRoute));
+                                if (AuthHelper.isLoggedIn()) {
+                                  await Get.find<FavouriteController>()
+                                      .getFavouriteList();
+                                 // profileController.getUserInfo();
+                                }
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: Dimensions.paddingSizeSmall),
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.red),
+                                      child: Icon(
+                                          Icons.power_settings_new_sharp,
+                                          size: 18,
+                                          color: Theme.of(context).cardColor),
+                                    ),
+                                    const SizedBox(
+                                        width:
+                                            Dimensions.paddingSizeExtraSmall),
+                                    Text(
+                                        AuthHelper.isLoggedIn()
+                                            ? 'logout'.tr
+                                            : 'sign_in'.tr,
+                                        style: robotoMedium.copyWith(
+                                            fontSize: Dimensions.fontSizeLarge))
+                                  ]),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  // Container(
+                  //   decoration: const BoxDecoration(
+                  //     gradient: LinearGradient(
+                  //       begin: Alignment.topRight,
+                  //       end: Alignment.bottomLeft,
+                  //       colors: [
+                  //         Color(0xFF833AB4),
+                  //         Color(0xFFFD1D1D),
+                  //       ],
+                  //     ),
+                  //   ),
+                  //   child: Column(
+                  //     children: [
+                  //       const SizedBox(height: 50),
+                  //       // Profile Section
+                  //       Padding(
+                  //         padding: const EdgeInsets.symmetric(horizontal: 20),
+                  //         child: Row(
+                  //           children: [
+                  //             const CircleAvatar(
+                  //               radius: 20,
+                  //               backgroundImage: AssetImage('assets/images/profile.png'),
+                  //             ),
+                  //             const SizedBox(width: 15),
+                  //             Text(
+                  //               'ندي صالح',
+                  //               style: TextStyle(
+                  //                 color: Colors.white,
+                  //                 fontSize: 18,
+                  //                 fontWeight: FontWeight.bold,
+                  //               ),
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       ),
+                  //       const SizedBox(height: 30),
+                  //       // Menu Items
+                  //       ListTile(
+                  //         leading: const Icon(Icons.phone, color: Colors.white),
+                  //         title: Text(
+                  //           'تواصل معانا',
+                  //           style: TextStyle(color: Colors.white),
+                  //         ),
+                  //         onTap: () {
+                  //
+                  //         },
+                  //       ),
+                  //       ListTile(
+                  //         leading: const Icon(Icons.policy, color: Colors.white),
+                  //         title: Text(
+                  //           'سياسيه التطبيق',
+                  //           style: TextStyle(color: Colors.white),
+                  //         ),
+                  //         onTap: () {
+                  //           // اضف الاكشن هنا
+                  //         },
+                  //       ),
+                  //       ListTile(
+                  //         leading: const Icon(Icons.app_registration, color: Colors.white),
+                  //         title: Text(
+                  //           'تسجيل خروج',
+                  //           style: TextStyle(color: Colors.white),
+                  //         ),
+                  //         onTap: () {
+                  //           // اضف الاكشن هنا
+                  //         },
+                  //       ),
+                  //       ListTile(
+                  //         leading: const Icon(Icons.delete, color: Colors.red),
+                  //         title: Text(
+                  //           'حذف حساب',
+                  //           style: TextStyle(color: Colors.red),
+                  //         ),
+                  //         onTap: () {
+                  //           // اضف الاكشن هنا
+                  //         },
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
           ),
           appBar:
               ResponsiveHelper.isDesktop(context) ? const WebMenuBar() : null,
-         // endDrawer: const MenuDrawer(),
+          // endDrawer: const MenuDrawer(),
           endDrawerEnableOpenDragGesture: false,
           backgroundColor: Theme.of(context).colorScheme.surface,
           body: isParcel
@@ -455,7 +719,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   CustomImageView(
                                                     onTap: () {
                                                       print('object');
-                                                      Scaffold.of(context).openDrawer();
+                                                      _scaffoldKey.currentState
+                                                          ?.openDrawer();
                                                     },
                                                     imagePath: Images.nDrawer,
                                                     height: Dimensions.iconLogo,
@@ -570,488 +835,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 actions: const [SizedBox()],
                               ),
-                              
-
-                              //////////////////////////////////////////*********************************
-                              //           SliverAppBar(
-                              //             floating: true,
-                              //             pinned: true,
-                              //             automaticallyImplyLeading: false,
-                              //             expandedHeight: 100.0,
-                              //             backgroundColor: Colors.transparent,
-                              //             shape: const RoundedRectangleBorder(
-                              //               borderRadius: BorderRadius.only(
-                              //                 bottomLeft: Radius.circular(
-                              //                     Dimensions.radiusExtraLarge),
-                              //                 bottomRight: Radius.circular(
-                              //                     Dimensions.radiusExtraLarge),
-                              //               ),
-                              //             ),
-                              //             flexibleSpace: FlexibleSpaceBar(
-                              //               background: ClipRRect(
-                              //                 borderRadius: const BorderRadius.only(
-                              //                   bottomLeft: Radius.circular(
-                              //                       Dimensions.radiusExtraLarge),
-                              //                   bottomRight: Radius.circular(
-                              //                       Dimensions.radiusExtraLarge),
-                              //                 ),
-                              //                 child: Container(
-                              //                   decoration: const BoxDecoration(
-                              //                     gradient: LinearGradient(
-                              //                       begin: Alignment.topRight,
-                              //                       end: Alignment.bottomLeft,
-                              //                       colors: [
-                              //                         AppColors.orange, // 0%
-                              //                         AppColors.subPrimary, // 27%
-                              //                         AppColors.purple, // 46%
-                              //                         AppColors.subPurple, // 74%
-                              //                         AppColors.blue, // 100%
-                              //                       ],
-                              //                       stops: [0.0, 0.27, 0.46, 0.74, 1.0],
-                              //                     ),
-                              //                   ),
-                              //                 ),
-                              //               ),
-                              //             ),
-                              //             title: Stack(
-                              //               children: [
-                              //                 Row(
-                              //                   mainAxisAlignment: MainAxisAlignment.start,
-                              //                   children: [
-                              //                      CustomImageView(imagePath: Images.backgroundAppBar,fit: BoxFit.fill,height: 200,width: 200,),
-                              //                   ],
-                              //                 ),
-                              //                 Column(
-                              //                   mainAxisAlignment: MainAxisAlignment.start,
-                              //                   children: [
-                              //                  //   CustomImageView(imagePath: Images.backgroundAppBar,width:205,),
-                              //                   ],
-                              //                 ),
-                              //
-                              //               ],
-                              //             ),
-                              //             actions: const [SizedBox()],
-                              //           ),
-///////////////////////////////////////********************************
-                              // SliverAppBar(
-                              //   floating: true,
-                              //   elevation: 0,
-                              //   automaticallyImplyLeading: false,
-                              //   surfaceTintColor: AppColors.primaryColor,
-                              //   backgroundColor: AppColors.primaryColor,
-                              //   title: Container(
-                              //     decoration: BoxDecoration(
-                              //       borderRadius: BorderRadius.only(
-                              //           bottomLeft: Radius.circular(
-                              //               Dimensions.radiusDefault),
-                              //           bottomRight: Radius.circular(
-                              //               Dimensions.radiusDefault)),
-                              //     ),
-                              //     width: Dimensions.webMaxWidth,
-                              //     height:
-                              //         Get.find<LocalizationController>().isLtr
-                              //             ? 60
-                              //             : 70,
-                              //
-                              //     child: Row(children: [
-                              //       (splashController.module != null &&
-                              //               splashController
-                              //                       .configModel!.module ==
-                              //                   null &&
-                              //               splashController.moduleList !=
-                              //                   null &&
-                              //               splashController
-                              //                       .moduleList!.length !=
-                              //                   1)
-                              //           ? InkWell(
-                              //               onTap: () {
-                              //                 splashController.removeModule();
-                              //                 Get.find<StoreController>()
-                              //                     .resetStoreData();
-                              //               },
-                              //               child: Image.asset(
-                              //                   Images.moduleIcon,
-                              //                   height: 25,
-                              //                   width: 25,
-                              //                   color: Theme.of(context)
-                              //                       .textTheme
-                              //                       .bodyLarge!
-                              //                       .color),
-                              //             )
-                              //           : const SizedBox(),
-                              //       SizedBox(
-                              //           width: (splashController.module !=
-                              //                       null &&
-                              //                   splashController
-                              //                           .configModel!.module ==
-                              //                       null &&
-                              //                   splashController.moduleList !=
-                              //                       null &&
-                              //                   splashController
-                              //                           .moduleList!.length !=
-                              //                       1)
-                              //               ? Dimensions.paddingSizeSmall
-                              //               : 0),
-                              //       Expanded(
-                              //           child: InkWell(
-                              //         onTap: () =>
-                              //             Get.find<LocationController>()
-                              //                 .navigateToLocationScreen('home'),
-                              //         child: Padding(
-                              //           padding: EdgeInsets.symmetric(
-                              //             vertical: Dimensions.paddingSizeSmall,
-                              //             horizontal:
-                              //                 ResponsiveHelper.isDesktop(
-                              //                         context)
-                              //                     ? Dimensions.paddingSizeSmall
-                              //                     : 0,
-                              //           ),
-                              //           child: GetBuilder<LocationController>(
-                              //               builder: (locationController) {
-                              //             return Column(
-                              //                 crossAxisAlignment:
-                              //                     CrossAxisAlignment.start,
-                              //                 children: [
-                              //                   Text(
-                              //                     AuthHelper.isLoggedIn()
-                              //                         ? AddressHelper
-                              //                                 .getUserAddressFromSharedPref()!
-                              //                             .addressType!
-                              //                             .tr
-                              //                         : 'your_location'.tr,
-                              //                     style: robotoMedium.copyWith(
-                              //                         color: Theme.of(context)
-                              //                             .textTheme
-                              //                             .bodyLarge!
-                              //                             .color,
-                              //                         fontSize: Dimensions
-                              //                             .fontSizeDefault),
-                              //                     maxLines: 1,
-                              //                     overflow:
-                              //                         TextOverflow.ellipsis,
-                              //                   ),
-                              //                   Row(children: [
-                              //                     Flexible(
-                              //                       child: Text(
-                              //                         AddressHelper
-                              //                                 .getUserAddressFromSharedPref()!
-                              //                             .address!,
-                              //                         style: robotoRegular.copyWith(
-                              //                             color: Theme.of(
-                              //                                     context)
-                              //                                 .disabledColor,
-                              //                             fontSize: Dimensions
-                              //                                 .fontSizeSmall),
-                              //                         maxLines: 1,
-                              //                         overflow:
-                              //                             TextOverflow.ellipsis,
-                              //                       ),
-                              //                     ),
-                              //                     Icon(Icons.expand_more,
-                              //                         color: Theme.of(context)
-                              //                             .disabledColor,
-                              //                         size: 18),
-                              //                   ]),
-                              //                 ]);
-                              //           }),
-                              //         ),
-                              //       )),
-                              //       InkWell(
-                              //         child: GetBuilder<NotificationController>(
-                              //             builder: (notificationController) {
-                              //           return Stack(children: [
-                              //             Icon(CupertinoIcons.bell,
-                              //                 size: 25,
-                              //                 color: Theme.of(context)
-                              //                     .textTheme
-                              //                     .bodyLarge!
-                              //                     .color),
-                              //             notificationController.hasNotification
-                              //                 ? Positioned(
-                              //                     top: 0,
-                              //                     right: 0,
-                              //                     child: Container(
-                              //                       height: 10,
-                              //                       width: 10,
-                              //                       decoration: BoxDecoration(
-                              //                         color: Theme.of(context)
-                              //                             .primaryColor,
-                              //                         shape: BoxShape.circle,
-                              //                         border: Border.all(
-                              //                             width: 1,
-                              //                             color:
-                              //                                 Theme.of(context)
-                              //                                     .cardColor),
-                              //                       ),
-                              //                     ))
-                              //                 : const SizedBox(),
-                              //           ]);
-                              //         }),
-                              //         onTap: () => Get.toNamed(
-                              //             RouteHelper.getNotificationRoute()),
-                              //       ),
-                              //     ]),
-                              //   ),
-                              //   actions: const [SizedBox()],
-                              // ),
-
-                              //App Bar
-                              // SliverAppBar(
-                              //   floating: true,
-                              //   elevation: 0,
-                              //   automaticallyImplyLeading: false,
-                              //   surfaceTintColor:
-                              //       Theme.of(context).colorScheme.surface,
-                              //   backgroundColor:
-                              //       ResponsiveHelper.isDesktop(context)
-                              //           ? Colors.transparent
-                              //           : Theme.of(context).colorScheme.surface,
-                              //   title: Center(
-                              //       child: Container(
-                              //     width: Dimensions.webMaxWidth,
-                              //     height:
-                              //         Get.find<LocalizationController>().isLtr
-                              //             ? 60
-                              //             : 70,
-                              //     color: Theme.of(context).colorScheme.surface,
-                              //     child: Row(children: [
-                              //       (splashController.module != null &&
-                              //               splashController
-                              //                       .configModel!.module ==
-                              //                   null &&
-                              //               splashController.moduleList !=
-                              //                   null &&
-                              //               splashController
-                              //                       .moduleList!.length !=
-                              //                   1)
-                              //           ? InkWell(
-                              //               onTap: () {
-                              //                 splashController.removeModule();
-                              //                 Get.find<StoreController>()
-                              //                     .resetStoreData();
-                              //               },
-                              //               child: Image.asset(
-                              //                   Images.moduleIcon,
-                              //                   height: 25,
-                              //                   width: 25,
-                              //                   color: Theme.of(context)
-                              //                       .textTheme
-                              //                       .bodyLarge!
-                              //                       .color),
-                              //             )
-                              //           : const SizedBox(),
-                              //       SizedBox(
-                              //           width: (splashController.module !=
-                              //                       null &&
-                              //                   splashController
-                              //                           .configModel!.module ==
-                              //                       null &&
-                              //                   splashController.moduleList !=
-                              //                       null &&
-                              //                   splashController
-                              //                           .moduleList!.length !=
-                              //                       1)
-                              //               ? Dimensions.paddingSizeSmall
-                              //               : 0),
-                              //       Expanded(
-                              //           child: InkWell(
-                              //         onTap: () =>
-                              //             Get.find<LocationController>()
-                              //                 .navigateToLocationScreen('home'),
-                              //         child: Padding(
-                              //           padding: EdgeInsets.symmetric(
-                              //             vertical: Dimensions.paddingSizeSmall,
-                              //             horizontal:
-                              //                 ResponsiveHelper.isDesktop(
-                              //                         context)
-                              //                     ? Dimensions.paddingSizeSmall
-                              //                     : 0,
-                              //           ),
-                              //           child: GetBuilder<LocationController>(
-                              //               builder: (locationController) {
-                              //             return Column(
-                              //                 crossAxisAlignment:
-                              //                     CrossAxisAlignment.start,
-                              //                 children: [
-                              //                   Text(
-                              //                     AuthHelper.isLoggedIn()
-                              //                         ? AddressHelper
-                              //                                 .getUserAddressFromSharedPref()!
-                              //                             .addressType!
-                              //                             .tr
-                              //                         : 'your_location'.tr,
-                              //                     style: robotoMedium.copyWith(
-                              //                         color: Theme.of(context)
-                              //                             .textTheme
-                              //                             .bodyLarge!
-                              //                             .color,
-                              //                         fontSize: Dimensions
-                              //                             .fontSizeDefault),
-                              //                     maxLines: 1,
-                              //                     overflow:
-                              //                         TextOverflow.ellipsis,
-                              //                   ),
-                              //                   Row(children: [
-                              //                     Flexible(
-                              //                       child: Text(
-                              //                         AddressHelper
-                              //                                 .getUserAddressFromSharedPref()!
-                              //                             .address!,
-                              //                         style: robotoRegular.copyWith(
-                              //                             color: Theme.of(
-                              //                                     context)
-                              //                                 .disabledColor,
-                              //                             fontSize: Dimensions
-                              //                                 .fontSizeSmall),
-                              //                         maxLines: 1,
-                              //                         overflow:
-                              //                             TextOverflow.ellipsis,
-                              //                       ),
-                              //                     ),
-                              //                     Icon(Icons.expand_more,
-                              //                         color: Theme.of(context)
-                              //                             .disabledColor,
-                              //                         size: 18),
-                              //                   ]),
-                              //                 ]);
-                              //           }),
-                              //         ),
-                              //       )),
-                              //       InkWell(
-                              //         child: GetBuilder<NotificationController>(
-                              //             builder: (notificationController) {
-                              //           return Stack(children: [
-                              //             Icon(CupertinoIcons.bell,
-                              //                 size: 25,
-                              //                 color: Theme.of(context)
-                              //                     .textTheme
-                              //                     .bodyLarge!
-                              //                     .color),
-                              //             notificationController.hasNotification
-                              //                 ? Positioned(
-                              //                     top: 0,
-                              //                     right: 0,
-                              //                     child: Container(
-                              //                       height: 10,
-                              //                       width: 10,
-                              //                       decoration: BoxDecoration(
-                              //                         color: Theme.of(context)
-                              //                             .primaryColor,
-                              //                         shape: BoxShape.circle,
-                              //                         border: Border.all(
-                              //                             width: 1,
-                              //                             color:
-                              //                                 Theme.of(context)
-                              //                                     .cardColor),
-                              //                       ),
-                              //                     ))
-                              //                 : const SizedBox(),
-                              //           ]);
-                              //         }),
-                              //         onTap: () => Get.toNamed(
-                              //             RouteHelper.getNotificationRoute()),
-                              //       ),
-                              //     ]),
-                              //   )),
-                              //   actions: const [SizedBox()],
-                              // ),
-
-                              /// Search Button
-                              // !showMobileModule && !isTaxi
-                              //     ? SliverPersistentHeader(
-                              //         pinned: true,
-                              //         delegate: SliverDelegate(
-                              //             callback: (val) {},
-                              //             child: Center(
-                              //                 child: Container(
-                              //               height: 50,
-                              //               width: Dimensions.webMaxWidth,
-                              //               color: searchBgShow
-                              //                   ? Get.find<ThemeController>()
-                              //                           .darkTheme
-                              //                       ? Theme.of(context)
-                              //                           .colorScheme
-                              //                           .surface
-                              //                       : Theme.of(context)
-                              //                           .cardColor
-                              //                   : null,
-                              //               padding: const EdgeInsets.symmetric(
-                              //                   horizontal: Dimensions
-                              //                       .paddingSizeSmall),
-                              //               child: isTaxi
-                              //                   ? Container(
-                              //                       color: Theme.of(context)
-                              //                           .primaryColor)
-                              //                   : InkWell(
-                              //                       onTap: () => Get.toNamed(
-                              //                           RouteHelper
-                              //                               .getSearchRoute()),
-                              //                       child: Container(
-                              //                         padding: const EdgeInsets
-                              //                             .symmetric(
-                              //                             horizontal: Dimensions
-                              //                                 .paddingSizeSmall),
-                              //                         margin: const EdgeInsets
-                              //                             .symmetric(
-                              //                             vertical: 3),
-                              //                         decoration: BoxDecoration(
-                              //                           color: Theme.of(context)
-                              //                               .cardColor,
-                              //                           border: Border.all(
-                              //                               color: Theme.of(
-                              //                                       context)
-                              //                                   .primaryColor
-                              //                                   .withValues(
-                              //                                       alpha: 0.2),
-                              //                               width: 1),
-                              //                           borderRadius:
-                              //                               BorderRadius
-                              //                                   .circular(25),
-                              //                           boxShadow: const [
-                              //                             BoxShadow(
-                              //                                 color: Colors
-                              //                                     .black12,
-                              //                                 blurRadius: 5,
-                              //                                 spreadRadius: 1)
-                              //                           ],
-                              //                         ),
-                              //                         child: Row(children: [
-                              //                           Icon(
-                              //                             CupertinoIcons.search,
-                              //                             size: 25,
-                              //                             color:
-                              //                                 Theme.of(context)
-                              //                                     .primaryColor,
-                              //                           ),
-                              //                           const SizedBox(
-                              //                               width: Dimensions
-                              //                                   .paddingSizeExtraSmall),
-                              //                           Expanded(
-                              //                               child: Text(
-                              //                             Get.find<SplashController>()
-                              //                                     .configModel!
-                              //                                     .moduleConfig!
-                              //                                     .module!
-                              //                                     .showRestaurantText!
-                              //                                 ? 'search_food_or_restaurant'
-                              //                                     .tr
-                              //                                 : 'search_item_or_store'
-                              //                                     .tr,
-                              //                             style: robotoRegular
-                              //                                 .copyWith(
-                              //                               fontSize: Dimensions
-                              //                                   .fontSizeSmall,
-                              //                               color: Theme.of(
-                              //                                       context)
-                              //                                   .hintColor,
-                              //                             ),
-                              //                           )),
-                              //                         ]),
-                              //                       ),
-                              //                     ),
-                              //             ))),
-                              //       )
-                              //     : const SliverToBoxAdapter(),
 
                               //⭐ rest of screen
                               SliverToBoxAdapter(
@@ -1200,3 +983,484 @@ class SliverDelegate extends SliverPersistentHeaderDelegate {
         child != oldDelegate.child;
   }
 }
+
+//////////////////////////////////////////*********************************
+//           SliverAppBar(
+//             floating: true,
+//             pinned: true,
+//             automaticallyImplyLeading: false,
+//             expandedHeight: 100.0,
+//             backgroundColor: Colors.transparent,
+//             shape: const RoundedRectangleBorder(
+//               borderRadius: BorderRadius.only(
+//                 bottomLeft: Radius.circular(
+//                     Dimensions.radiusExtraLarge),
+//                 bottomRight: Radius.circular(
+//                     Dimensions.radiusExtraLarge),
+//               ),
+//             ),
+//             flexibleSpace: FlexibleSpaceBar(
+//               background: ClipRRect(
+//                 borderRadius: const BorderRadius.only(
+//                   bottomLeft: Radius.circular(
+//                       Dimensions.radiusExtraLarge),
+//                   bottomRight: Radius.circular(
+//                       Dimensions.radiusExtraLarge),
+//                 ),
+//                 child: Container(
+//                   decoration: const BoxDecoration(
+//                     gradient: LinearGradient(
+//                       begin: Alignment.topRight,
+//                       end: Alignment.bottomLeft,
+//                       colors: [
+//                         AppColors.orange, // 0%
+//                         AppColors.subPrimary, // 27%
+//                         AppColors.purple, // 46%
+//                         AppColors.subPurple, // 74%
+//                         AppColors.blue, // 100%
+//                       ],
+//                       stops: [0.0, 0.27, 0.46, 0.74, 1.0],
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             title: Stack(
+//               children: [
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.start,
+//                   children: [
+//                      CustomImageView(imagePath: Images.backgroundAppBar,fit: BoxFit.fill,height: 200,width: 200,),
+//                   ],
+//                 ),
+//                 Column(
+//                   mainAxisAlignment: MainAxisAlignment.start,
+//                   children: [
+//                  //   CustomImageView(imagePath: Images.backgroundAppBar,width:205,),
+//                   ],
+//                 ),
+//
+//               ],
+//             ),
+//             actions: const [SizedBox()],
+//           ),
+///////////////////////////////////////********************************
+// SliverAppBar(
+//   floating: true,
+//   elevation: 0,
+//   automaticallyImplyLeading: false,
+//   surfaceTintColor: AppColors.primaryColor,
+//   backgroundColor: AppColors.primaryColor,
+//   title: Container(
+//     decoration: BoxDecoration(
+//       borderRadius: BorderRadius.only(
+//           bottomLeft: Radius.circular(
+//               Dimensions.radiusDefault),
+//           bottomRight: Radius.circular(
+//               Dimensions.radiusDefault)),
+//     ),
+//     width: Dimensions.webMaxWidth,
+//     height:
+//         Get.find<LocalizationController>().isLtr
+//             ? 60
+//             : 70,
+//
+//     child: Row(children: [
+//       (splashController.module != null &&
+//               splashController
+//                       .configModel!.module ==
+//                   null &&
+//               splashController.moduleList !=
+//                   null &&
+//               splashController
+//                       .moduleList!.length !=
+//                   1)
+//           ? InkWell(
+//               onTap: () {
+//                 splashController.removeModule();
+//                 Get.find<StoreController>()
+//                     .resetStoreData();
+//               },
+//               child: Image.asset(
+//                   Images.moduleIcon,
+//                   height: 25,
+//                   width: 25,
+//                   color: Theme.of(context)
+//                       .textTheme
+//                       .bodyLarge!
+//                       .color),
+//             )
+//           : const SizedBox(),
+//       SizedBox(
+//           width: (splashController.module !=
+//                       null &&
+//                   splashController
+//                           .configModel!.module ==
+//                       null &&
+//                   splashController.moduleList !=
+//                       null &&
+//                   splashController
+//                           .moduleList!.length !=
+//                       1)
+//               ? Dimensions.paddingSizeSmall
+//               : 0),
+//       Expanded(
+//           child: InkWell(
+//         onTap: () =>
+//             Get.find<LocationController>()
+//                 .navigateToLocationScreen('home'),
+//         child: Padding(
+//           padding: EdgeInsets.symmetric(
+//             vertical: Dimensions.paddingSizeSmall,
+//             horizontal:
+//                 ResponsiveHelper.isDesktop(
+//                         context)
+//                     ? Dimensions.paddingSizeSmall
+//                     : 0,
+//           ),
+//           child: GetBuilder<LocationController>(
+//               builder: (locationController) {
+//             return Column(
+//                 crossAxisAlignment:
+//                     CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     AuthHelper.isLoggedIn()
+//                         ? AddressHelper
+//                                 .getUserAddressFromSharedPref()!
+//                             .addressType!
+//                             .tr
+//                         : 'your_location'.tr,
+//                     style: robotoMedium.copyWith(
+//                         color: Theme.of(context)
+//                             .textTheme
+//                             .bodyLarge!
+//                             .color,
+//                         fontSize: Dimensions
+//                             .fontSizeDefault),
+//                     maxLines: 1,
+//                     overflow:
+//                         TextOverflow.ellipsis,
+//                   ),
+//                   Row(children: [
+//                     Flexible(
+//                       child: Text(
+//                         AddressHelper
+//                                 .getUserAddressFromSharedPref()!
+//                             .address!,
+//                         style: robotoRegular.copyWith(
+//                             color: Theme.of(
+//                                     context)
+//                                 .disabledColor,
+//                             fontSize: Dimensions
+//                                 .fontSizeSmall),
+//                         maxLines: 1,
+//                         overflow:
+//                             TextOverflow.ellipsis,
+//                       ),
+//                     ),
+//                     Icon(Icons.expand_more,
+//                         color: Theme.of(context)
+//                             .disabledColor,
+//                         size: 18),
+//                   ]),
+//                 ]);
+//           }),
+//         ),
+//       )),
+//       InkWell(
+//         child: GetBuilder<NotificationController>(
+//             builder: (notificationController) {
+//           return Stack(children: [
+//             Icon(CupertinoIcons.bell,
+//                 size: 25,
+//                 color: Theme.of(context)
+//                     .textTheme
+//                     .bodyLarge!
+//                     .color),
+//             notificationController.hasNotification
+//                 ? Positioned(
+//                     top: 0,
+//                     right: 0,
+//                     child: Container(
+//                       height: 10,
+//                       width: 10,
+//                       decoration: BoxDecoration(
+//                         color: Theme.of(context)
+//                             .primaryColor,
+//                         shape: BoxShape.circle,
+//                         border: Border.all(
+//                             width: 1,
+//                             color:
+//                                 Theme.of(context)
+//                                     .cardColor),
+//                       ),
+//                     ))
+//                 : const SizedBox(),
+//           ]);
+//         }),
+//         onTap: () => Get.toNamed(
+//             RouteHelper.getNotificationRoute()),
+//       ),
+//     ]),
+//   ),
+//   actions: const [SizedBox()],
+// ),
+
+//App Bar
+// SliverAppBar(
+//   floating: true,
+//   elevation: 0,
+//   automaticallyImplyLeading: false,
+//   surfaceTintColor:
+//       Theme.of(context).colorScheme.surface,
+//   backgroundColor:
+//       ResponsiveHelper.isDesktop(context)
+//           ? Colors.transparent
+//           : Theme.of(context).colorScheme.surface,
+//   title: Center(
+//       child: Container(
+//     width: Dimensions.webMaxWidth,
+//     height:
+//         Get.find<LocalizationController>().isLtr
+//             ? 60
+//             : 70,
+//     color: Theme.of(context).colorScheme.surface,
+//     child: Row(children: [
+//       (splashController.module != null &&
+//               splashController
+//                       .configModel!.module ==
+//                   null &&
+//               splashController.moduleList !=
+//                   null &&
+//               splashController
+//                       .moduleList!.length !=
+//                   1)
+//           ? InkWell(
+//               onTap: () {
+//                 splashController.removeModule();
+//                 Get.find<StoreController>()
+//                     .resetStoreData();
+//               },
+//               child: Image.asset(
+//                   Images.moduleIcon,
+//                   height: 25,
+//                   width: 25,
+//                   color: Theme.of(context)
+//                       .textTheme
+//                       .bodyLarge!
+//                       .color),
+//             )
+//           : const SizedBox(),
+//       SizedBox(
+//           width: (splashController.module !=
+//                       null &&
+//                   splashController
+//                           .configModel!.module ==
+//                       null &&
+//                   splashController.moduleList !=
+//                       null &&
+//                   splashController
+//                           .moduleList!.length !=
+//                       1)
+//               ? Dimensions.paddingSizeSmall
+//               : 0),
+//       Expanded(
+//           child: InkWell(
+//         onTap: () =>
+//             Get.find<LocationController>()
+//                 .navigateToLocationScreen('home'),
+//         child: Padding(
+//           padding: EdgeInsets.symmetric(
+//             vertical: Dimensions.paddingSizeSmall,
+//             horizontal:
+//                 ResponsiveHelper.isDesktop(
+//                         context)
+//                     ? Dimensions.paddingSizeSmall
+//                     : 0,
+//           ),
+//           child: GetBuilder<LocationController>(
+//               builder: (locationController) {
+//             return Column(
+//                 crossAxisAlignment:
+//                     CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     AuthHelper.isLoggedIn()
+//                         ? AddressHelper
+//                                 .getUserAddressFromSharedPref()!
+//                             .addressType!
+//                             .tr
+//                         : 'your_location'.tr,
+//                     style: robotoMedium.copyWith(
+//                         color: Theme.of(context)
+//                             .textTheme
+//                             .bodyLarge!
+//                             .color,
+//                         fontSize: Dimensions
+//                             .fontSizeDefault),
+//                     maxLines: 1,
+//                     overflow:
+//                         TextOverflow.ellipsis,
+//                   ),
+//                   Row(children: [
+//                     Flexible(
+//                       child: Text(
+//                         AddressHelper
+//                                 .getUserAddressFromSharedPref()!
+//                             .address!,
+//                         style: robotoRegular.copyWith(
+//                             color: Theme.of(
+//                                     context)
+//                                 .disabledColor,
+//                             fontSize: Dimensions
+//                                 .fontSizeSmall),
+//                         maxLines: 1,
+//                         overflow:
+//                             TextOverflow.ellipsis,
+//                       ),
+//                     ),
+//                     Icon(Icons.expand_more,
+//                         color: Theme.of(context)
+//                             .disabledColor,
+//                         size: 18),
+//                   ]),
+//                 ]);
+//           }),
+//         ),
+//       )),
+//       InkWell(
+//         child: GetBuilder<NotificationController>(
+//             builder: (notificationController) {
+//           return Stack(children: [
+//             Icon(CupertinoIcons.bell,
+//                 size: 25,
+//                 color: Theme.of(context)
+//                     .textTheme
+//                     .bodyLarge!
+//                     .color),
+//             notificationController.hasNotification
+//                 ? Positioned(
+//                     top: 0,
+//                     right: 0,
+//                     child: Container(
+//                       height: 10,
+//                       width: 10,
+//                       decoration: BoxDecoration(
+//                         color: Theme.of(context)
+//                             .primaryColor,
+//                         shape: BoxShape.circle,
+//                         border: Border.all(
+//                             width: 1,
+//                             color:
+//                                 Theme.of(context)
+//                                     .cardColor),
+//                       ),
+//                     ))
+//                 : const SizedBox(),
+//           ]);
+//         }),
+//         onTap: () => Get.toNamed(
+//             RouteHelper.getNotificationRoute()),
+//       ),
+//     ]),
+//   )),
+//   actions: const [SizedBox()],
+// ),
+
+/// Search Button
+// !showMobileModule && !isTaxi
+//     ? SliverPersistentHeader(
+//         pinned: true,
+//         delegate: SliverDelegate(
+//             callback: (val) {},
+//             child: Center(
+//                 child: Container(
+//               height: 50,
+//               width: Dimensions.webMaxWidth,
+//               color: searchBgShow
+//                   ? Get.find<ThemeController>()
+//                           .darkTheme
+//                       ? Theme.of(context)
+//                           .colorScheme
+//                           .surface
+//                       : Theme.of(context)
+//                           .cardColor
+//                   : null,
+//               padding: const EdgeInsets.symmetric(
+//                   horizontal: Dimensions
+//                       .paddingSizeSmall),
+//               child: isTaxi
+//                   ? Container(
+//                       color: Theme.of(context)
+//                           .primaryColor)
+//                   : InkWell(
+//                       onTap: () => Get.toNamed(
+//                           RouteHelper
+//                               .getSearchRoute()),
+//                       child: Container(
+//                         padding: const EdgeInsets
+//                             .symmetric(
+//                             horizontal: Dimensions
+//                                 .paddingSizeSmall),
+//                         margin: const EdgeInsets
+//                             .symmetric(
+//                             vertical: 3),
+//                         decoration: BoxDecoration(
+//                           color: Theme.of(context)
+//                               .cardColor,
+//                           border: Border.all(
+//                               color: Theme.of(
+//                                       context)
+//                                   .primaryColor
+//                                   .withValues(
+//                                       alpha: 0.2),
+//                               width: 1),
+//                           borderRadius:
+//                               BorderRadius
+//                                   .circular(25),
+//                           boxShadow: const [
+//                             BoxShadow(
+//                                 color: Colors
+//                                     .black12,
+//                                 blurRadius: 5,
+//                                 spreadRadius: 1)
+//                           ],
+//                         ),
+//                         child: Row(children: [
+//                           Icon(
+//                             CupertinoIcons.search,
+//                             size: 25,
+//                             color:
+//                                 Theme.of(context)
+//                                     .primaryColor,
+//                           ),
+//                           const SizedBox(
+//                               width: Dimensions
+//                                   .paddingSizeExtraSmall),
+//                           Expanded(
+//                               child: Text(
+//                             Get.find<SplashController>()
+//                                     .configModel!
+//                                     .moduleConfig!
+//                                     .module!
+//                                     .showRestaurantText!
+//                                 ? 'search_food_or_restaurant'
+//                                     .tr
+//                                 : 'search_item_or_store'
+//                                     .tr,
+//                             style: robotoRegular
+//                                 .copyWith(
+//                               fontSize: Dimensions
+//                                   .fontSizeSmall,
+//                               color: Theme.of(
+//                                       context)
+//                                   .hintColor,
+//                             ),
+//                           )),
+//                         ]),
+//                       ),
+//                     ),
+//             ))),
+//       )
+//     : const SliverToBoxAdapter(),

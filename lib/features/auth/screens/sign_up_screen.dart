@@ -1,3 +1,4 @@
+import 'package:sixam_mart/common/nWidget/custom_image.dart';
 import 'package:sixam_mart/features/auth/widgets/sign_up_widget.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
@@ -48,7 +49,7 @@ class SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ) : const SizedBox(),
 
-                Image.asset(Images.logo, width: 125),
+               CustomImageView(imagePath: Images.nLogo,),
                 const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
                 Align(

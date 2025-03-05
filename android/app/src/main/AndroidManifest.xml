@@ -25,7 +25,7 @@
     </queries>
 
     <application
-        android:label="6amMart"
+        android:label="elwasset"
         android:name="${applicationName}"
         android:extractNativeLibs="true"
         android:requestLegacyExternalStorage="true"
